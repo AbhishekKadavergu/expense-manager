@@ -58,8 +58,11 @@ router.get("/Incomes", auth, async (req, res) => {
 //GET Incomes within a given range
 router.get("/Incomes/data/dates", auth, async (req, res) => {
   try {
-    const startDate = req.body.start;
-    const endDate = req.body.end;
+    // const startDate = req.body.start;
+    // const endDate = req.body.end;
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+
     const income = await Income.find({
       owner: req.user._id,
       //   date: { $gte: "2021-06-09", $lte: "2021-06-24" },
