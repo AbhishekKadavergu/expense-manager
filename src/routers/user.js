@@ -3,6 +3,33 @@ const multer = require("multer");
 const sharp = require("sharp");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
+// // Requiring module
+// const reader = require("xlsx");
+
+// // Reading our test file
+// const file = reader.readFile("./test.xlsx");
+
+// // Sample data set
+// let student_data = [{
+//         Student: "Nikhil",
+//         Age: 22,
+//         Branch: "ISE",
+//         Marks: 70,
+//     },
+//     {
+//         Student: "Amitha",
+//         Age: 21,
+//         Branch: "EC",
+//         Marks: 80,
+//     },
+// ];
+
+// const ws = reader.utils.json_to_sheet(student_data);
+
+// reader.utils.book_append_sheet(file, ws, "Sheet3");
+
+// // Writing to our file
+// reader.writeFile(file, "./test.xlsx");
 
 const router = express.Router();
 
@@ -17,7 +44,7 @@ router.post("/users", async(req, res) => {
     }
 });
 
-const creds = multer()
+const creds = multer();
 router.post("/users/login", creds.none(), async(req, res) => {
     try {
         const user = await User.findUserByCredentials(
@@ -33,7 +60,7 @@ router.post("/users/login", creds.none(), async(req, res) => {
 
 router.post("/users/logout", auth, async(req, res) => {
     try {
-        console.log(req.user)
+        console.log(req.user);
         req.user.tokens = req.user.tokens.filter(
             (token) => token.token !== req.token
         );
@@ -92,11 +119,11 @@ router.patch("/users/me", auth, async(req, res) => {
 });
 
 router.patch("/users/me/changepwd", auth, async(req, res) => {
-    const updates = Object.keys(req.body)
+    const updates = Object.keys(req.body);
     const validUpdates = ["curent_password", "new_password", "confirm_password"];
-    const isValid = updates.every(update => validUpdates.includes(update));
+    const isValid = updates.every((update) => validUpdates.includes(update));
     if (!isValid) {
-        return res.status(404).send({ error: "Bad inputs!" })
+        return res.status(404).send({ error: "Bad inputs!" });
     }
 
     try {
@@ -105,47 +132,53 @@ router.patch("/users/me/changepwd", auth, async(req, res) => {
             req.body.curent_password
         );
 
-        user['password'] = req.body['confirm_password']
-        await user.save()
-        res.status(200).send({ 'success': "Password updated successfully" })
+        user["password"] = req.body["confirm_password"];
+        await user.save();
+        res.status(200).send({ success: "Password updated successfully" });
     } catch (error) {
         res.status(403).send({ error: "Invalid credentials" });
     }
-})
+});
 
 router.post("/users/forgotpwd", async(req, res) => {
     try {
-        const user = await User.findOne({ email: req.body.email })
+        const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            throw new Error("Couldn't find your email")
+            throw new Error("Couldn't find your email");
         }
-        const zeroOrOne = Math.round(Math.random())
-        console.log(user['questions'][zeroOrOne])
-        res.status(200).send({ "question": { qst: user['questions'][zeroOrOne].qst, _id: user['questions'][zeroOrOne]._id }, email: user.email })
-
+        const zeroOrOne = Math.round(Math.random());
+        console.log(user["questions"][zeroOrOne]);
+        res.status(200).send({
+            question: {
+                qst: user["questions"][zeroOrOne].qst,
+                _id: user["questions"][zeroOrOne]._id,
+            },
+            email: user.email,
+        });
     } catch (error) {
-        res.status(404).send({ error: error.message })
-
+        res.status(404).send({ error: error.message });
     }
-
-})
+});
 
 router.post("/users/setpwd", async(req, res) => {
     try {
-        const user = await User.findOne({ email: req.body.email, "questions._id": req.body.question._id, "questions.res": req.body.question.res })
-            // const user = await User.find({ "questions._id": req.body.question._id, "questions.res": req.body.question.res })
+        const user = await User.findOne({
+            email: req.body.email,
+            "questions._id": req.body.question._id,
+            "questions.res": req.body.question.res,
+        });
+        // const user = await User.find({ "questions._id": req.body.question._id, "questions.res": req.body.question.res })
         if (!user) {
-            throw new Error("Invalid response")
+            throw new Error("Invalid response");
         }
 
-        user['password'] = req.body.cpassword
-        await user.save()
-        res.status(200).send(user)
-
+        user["password"] = req.body.cpassword;
+        await user.save();
+        res.status(200).send(user);
     } catch (error) {
-        res.status(403).send(error.message)
+        res.status(403).send(error.message);
     }
-})
+});
 
 router.delete("/users/me", auth, async(req, res) => {
     try {
@@ -179,10 +212,10 @@ router.post(
             .toBuffer();
         req.user.avatar = buffer;
         await req.user.save();
-        res.send({ "success": "Photo uploaded successfully" });
+        res.send({ success: "Photo uploaded successfully" });
     },
     (error, req, res, next) => {
-        res.status(400).send({ "fail": error.message });
+        res.status(400).send({ fail: error.message });
     }
 );
 
@@ -191,11 +224,11 @@ router.delete("/users/me/avatar", auth, async(req, res) => {
         if (req.user.avatar) {
             req.user.avatar = undefined;
             await req.user.save();
-            res.status(200).send({ "success": "User avatar deleted successfully" });
+            res.status(200).send({ success: "User avatar deleted successfully" });
         }
-        res.status(404).send({ "fail": "No avatar found" });
+        res.status(404).send({ fail: "No avatar found" });
     } catch (error) {
-        res.status(500).send({ "fail": "Something went wrong" });
+        res.status(500).send({ fail: "Something went wrong" });
     }
 });
 
@@ -203,14 +236,13 @@ router.get("/users/:id/avatar", async(req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user || !user.avatar) {
-            throw new Error();
+            throw new Error("No avatar found");
         }
         res.set("Content-Type", "image/jpg");
         res.send(user.avatar);
     } catch (error) {
-        res.status(500).send({ "fail": "Failed to get user photo" });
+        res.status(500).send({ fail: "Failed to get user photo" });
     }
 });
-
 
 module.exports = router;
